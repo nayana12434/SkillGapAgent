@@ -1,1 +1,82 @@
-[]
+[
+  {
+    "id": "course_1",
+    "title": "SQL for Data Analysis",
+    "provider": "Coursera",
+    "url": "https://www.coursera.org/",
+    "skills": ["SQL"],
+    "level": "Beginner"
+  },
+  {
+    "id": "course_2",
+    "title": "Excel Skills for Data Analysis",
+    "provider": "Coursera",
+    "url": "https://www.coursera.org/",
+    "skills": ["Excel"],
+    "level": "Beginner"
+  },
+  {
+    "id": "course_3",
+    "title": "Power BI Data Visualization",
+    "provider": "Microsoft Learn",
+    "url": "https://learn.microsoft.com/",
+    "skills": ["Power BI"],
+    "level": "Beginner"
+  },
+  {
+    "id": "course_4",
+    "title": "FastAPI and REST API Development",
+    "provider": "Udemy",
+    "url": "https://www.udemy.com/",
+    "skills": ["FastAPI", "REST API"],
+    "level": "Intermediate"
+  },
+  {
+    "id": "course_5",
+    "title": "Docker Fundamentals",
+    "provider": "Docker",
+    "url": "https://www.docker.com/",
+    "skills": ["Docker"],
+    "level": "Beginner"
+  },
+  {
+    "id": "course_6",
+    "title": "Machine Learning with Python",
+    "provider": "Coursera",
+    "url": "https://www.coursera.org/",
+    "skills": ["Machine Learning", "NumPy", "Pandas"],
+    "level": "Intermediate"
+  },
+  {
+    "id": "course_7",
+    "title": "TensorFlow for Beginners",
+    "provider": "TensorFlow",
+    "url": "https://www.tensorflow.org/",
+    "skills": ["TensorFlow"],
+    "level": "Intermediate"
+  },
+  {
+    "id": "course_8",
+    "title": "Frontend Web Development",
+    "provider": "freeCodeCamp",
+    "url": "https://www.freecodecamp.org/",
+    "skills": ["HTML", "CSS", "JavaScript"],
+    "level": "Beginner"
+  },
+  {
+    "id": "course_9",
+    "title": "React.js Complete Guide",
+    "provider": "Udemy",
+    "url": "https://www.udemy.com/",
+    "skills": ["React"],
+    "level": "Intermediate"
+  },
+  {
+    "id": "course_10",
+    "title": "Git and GitHub Essentials",
+    "provider": "GitHub Skills",
+    "url": "https://skills.github.com/",
+    "skills": ["Git"],
+    "level": "Beginner"
+  }
+]

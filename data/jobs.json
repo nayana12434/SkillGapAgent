@@ -1,1 +1,72 @@
-[]
+[
+  {
+    "id": "JOB001",
+    "title": "Data Analyst",
+    "company": "TechNova Solutions",
+    "location": "Bengaluru",
+    "required_skills": [
+      "Python",
+      "SQL",
+      "Excel",
+      "Power BI",
+      "Statistics"
+    ],
+    "description": "Analyze business data and create reports and dashboards."
+  },
+  {
+    "id": "JOB002",
+    "title": "Python Developer",
+    "company": "CodeCraft Technologies",
+    "location": "Hyderabad",
+    "required_skills": [
+      "Python",
+      "Django",
+      "REST API",
+      "SQL",
+      "Git"
+    ],
+    "description": "Develop and maintain Python-based web applications."
+  },
+  {
+    "id": "JOB003",
+    "title": "Machine Learning Engineer",
+    "company": "AI Innovations",
+    "location": "Bengaluru",
+    "required_skills": [
+      "Python",
+      "Machine Learning",
+      "TensorFlow",
+      "NumPy",
+      "Pandas"
+    ],
+    "description": "Build and deploy machine learning models."
+  },
+  {
+    "id": "JOB004",
+    "title": "Frontend Developer",
+    "company": "WebWorks India",
+    "location": "Pune",
+    "required_skills": [
+      "HTML",
+      "CSS",
+      "JavaScript",
+      "React",
+      "Git"
+    ],
+    "description": "Create responsive and interactive web interfaces."
+  },
+  {
+    "id": "JOB005",
+    "title": "Backend Developer",
+    "company": "CloudStack Systems",
+    "location": "Chennai",
+    "required_skills": [
+      "Python",
+      "FastAPI",
+      "SQL",
+      "REST API",
+      "Docker"
+    ],
+    "description": "Develop scalable backend services and APIs."
+  }
+]
