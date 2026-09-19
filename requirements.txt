@@ -1,7 +1,9 @@
 fastapi
 uvicorn[standard]
 langgraph
+langchain
 langchain-core
+langchain-groq
 sentence-transformers
 pydantic
 python-dotenv
