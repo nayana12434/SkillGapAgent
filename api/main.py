@@ -3,7 +3,8 @@ FastAPI entry point for the SkillBridge application.
 """
 
 from typing import Any
-
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
@@ -56,17 +57,21 @@ def analyze_profile(request: AnalyzeRequest) -> dict[str, Any]:
     """
     Runs the complete SkillBridge pipeline.
     """
-
     try:
         result = run_pipeline(request.raw_text)
-
         return {
             "success": True,
             "data": result,
         }
-
     except Exception as error:
         raise HTTPException(
             status_code=500,
             detail=f"Pipeline error: {str(error)}",
         )
+
+
+app.mount("/static", StaticFiles(directory="frontend"), name="static")
+
+@app.get("/app")
+def serve_frontend():
+    return FileResponse("frontend/index.html")
