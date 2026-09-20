@@ -1,359 +1,452 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SkillBridge AI</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SkillBridge AI</title>
+<style>
+  :root {
+    --bg: #0b0f1a;
+    --panel: #141b2d;
+    --panel-2: #0f1523;
+    --border: #253150;
+    --accent: #7c93ff;
+    --accent-2: #62d99a;
+    --text: #eef1fb;
+    --muted: #93a0c2;
+    --high: #ff8a8a;
+    --medium: #ffcf7a;
+    --low: #7fe0a8;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Segoe UI", Arial, sans-serif;
+    background:
+      radial-gradient(circle at 15% 0%, #1c2b55 0%, transparent 40%),
+      radial-gradient(circle at 90% 10%, #3a1f57 0%, transparent 40%),
+      var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 32px 20px 80px;
+  }
+  .container { max-width: 980px; margin: 0 auto; }
 
-    <style>
-        * {
-            box-sizing: border-box;
-            font-family: Arial, sans-serif;
-        }
+  header { text-align: center; margin-bottom: 30px; }
+  header h1 {
+    font-size: clamp(32px, 5vw, 48px);
+    background: linear-gradient(90deg, #9baaff, #d9a6ff);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 8px;
+  }
+  header p { color: var(--muted); font-size: 15px; }
 
-        body {
-            margin: 0;
-            padding: 30px;
-            min-height: 100vh;
-            background: #081522;
-            color: white;
-        }
+  .input-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 24px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+    margin-bottom: 28px;
+  }
+  .input-card label {
+    display: block;
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 12px;
+  }
+  textarea {
+    width: 100%;
+    min-height: 150px;
+    resize: vertical;
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    color: var(--text);
+    padding: 14px;
+    font-size: 15px;
+    line-height: 1.6;
+    outline: none;
+  }
+  textarea:focus { border-color: var(--accent); }
 
-        .container {
-            max-width: 1100px;
-            margin: auto;
-        }
+  button#analyzeButton {
+    margin-top: 16px;
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(90deg, #6478ff, #a66dff);
+    color: white;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.15s, opacity 0.15s;
+  }
+  button#analyzeButton:hover { transform: translateY(-2px); }
+  button#analyzeButton:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
 
-        header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
+  .status {
+    display: none;
+    margin-top: 16px;
+    padding: 13px 16px;
+    border-radius: 10px;
+    font-size: 14px;
+  }
+  #loadingStatus { background: rgba(124,147,255,0.12); border: 1px solid #3d4d8f; color: #c3ccff; }
+  #errorStatus { background: rgba(255,138,138,0.1); border: 1px solid #7a3e3e; color: #ffb3b3; }
 
-        h1 {
-            font-size: 42px;
-        }
+  #results { display: none; }
 
-        h1 span {
-            color: #22d3ee;
-        }
+  .section { margin-bottom: 34px; }
+  .section-heading {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-heading h2 { font-size: 22px; color: var(--text); }
+  .section-heading span { color: var(--muted); font-size: 13px; }
 
-        p {
-            color: #b6c5d4;
-            line-height: 1.6;
-        }
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px 20px;
+    margin-bottom: 12px;
+  }
+  .card h3 { font-size: 17px; margin-bottom: 6px; }
+  .card h4 { font-size: 13px; color: var(--muted); font-weight: 600; margin-bottom: 10px; }
+  .card p { color: #c4cbe0; font-size: 14px; line-height: 1.55; margin-bottom: 10px; }
 
-        .box {
-            background: #122638;
-            border: 1px solid #29465c;
-            border-radius: 18px;
-            padding: 25px;
-            margin-bottom: 25px;
-        }
+  .tag {
+    display: inline-block;
+    background: rgba(124,147,255,0.14);
+    color: #c9d3ff;
+    border: 1px solid #3d4d8f;
+    padding: 5px 10px;
+    border-radius: 20px;
+    margin: 4px 4px 0 0;
+    font-size: 12px;
+  }
+  .badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 4px 9px;
+    border-radius: 6px;
+    margin-right: 8px;
+  }
+  .badge.high { background: rgba(255,138,138,0.15); color: var(--high); }
+  .badge.medium { background: rgba(255,207,122,0.15); color: var(--medium); }
+  .badge.low { background: rgba(127,224,168,0.15); color: var(--low); }
 
-        textarea {
-            width: 100%;
-            height: 180px;
-            padding: 15px;
-            border-radius: 12px;
-            border: 1px solid #45657d;
-            background: #091824;
-            color: white;
-            font-size: 16px;
-            resize: vertical;
-        }
+  .match-pill {
+    display: inline-block;
+    background: rgba(98,217,154,0.14);
+    color: var(--accent-2);
+    border: 1px solid #2f6b4d;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+  }
 
-        button {
-            width: 100%;
-            margin-top: 15px;
-            padding: 16px;
-            border: none;
-            border-radius: 10px;
-            background: #16bce5;
-            color: white;
-            font-size: 17px;
-            font-weight: bold;
-            cursor: pointer;
-        }
+  .profile-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+  .profile-item {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+  }
+  .profile-item strong {
+    display: block;
+    color: var(--accent);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 8px;
+  }
+  .profile-item span { color: #d5dbea; font-size: 14px; line-height: 1.5; }
 
-        button:disabled {
-            opacity: 0.6;
-        }
+  .empty {
+    background: var(--panel);
+    border: 1px dashed var(--border);
+    color: var(--muted);
+    padding: 18px;
+    border-radius: 12px;
+    text-align: center;
+    font-size: 14px;
+  }
 
-        #message {
-            margin-top: 15px;
-            padding: 12px;
-            border-radius: 8px;
-            white-space: pre-wrap;
-        }
+  a.course-link {
+    color: var(--accent);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  a.course-link:hover { text-decoration: underline; }
 
-        .success {
-            background: #124b3b;
-        }
-
-        .error {
-            background: #632c2c;
-        }
-
-        #results {
-            display: none;
-        }
-
-        .grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-
-        .card {
-            background: #102334;
-            border: 1px solid #29465c;
-            border-radius: 15px;
-            padding: 20px;
-        }
-
-        .full {
-            grid-column: 1 / -1;
-        }
-
-        h2 {
-            color: #22d3ee;
-        }
-
-        h3 {
-            color: white;
-        }
-
-        .item {
-            background: #091824;
-            border-radius: 10px;
-            padding: 15px;
-            margin: 12px 0;
-        }
-
-        .tag {
-            display: inline-block;
-            background: #16465b;
-            color: #9cecff;
-            padding: 5px 9px;
-            border-radius: 15px;
-            margin: 4px;
-            font-size: 13px;
-        }
-
-        a {
-            display: inline-block;
-            margin-top: 10px;
-            padding: 9px 12px;
-            border-radius: 7px;
-            background: #1685a8;
-            color: white;
-            text-decoration: none;
-        }
-
-        .empty {
-            color: #91a6b9;
-        }
-
-        @media (max-width: 750px) {
-            body {
-                padding: 15px;
-            }
-
-            .grid {
-                grid-template-columns: 1fr;
-            }
-
-            .full {
-                grid-column: auto;
-            }
-        }
-    </style>
+  @media (max-width: 600px) {
+    body { padding: 20px 14px 60px; }
+  }
+</style>
 </head>
-
 <body>
-    <div class="container">
+<div class="container">
+  <header>
+    <h1>SkillBridge AI</h1>
+    <p>Discover suitable careers, identify skill gaps, and find learning opportunities.</p>
+  </header>
 
-        <header>
-            <h1>Skill<span>Bridge</span> AI</h1>
-            <p>Your personalized pathway from skills to career opportunities.</p>
-        </header>
+  <div class="input-card">
+    <label for="profileInput">Tell us about yourself</label>
+    <textarea id="profileInput" placeholder="Example: I am a Computer Science student with knowledge of Python, Java, SQL, HTML, CSS, and machine learning. I am interested in becoming a software developer or data analyst."></textarea>
+    <button id="analyzeButton" type="button">Analyse My Profile</button>
+    <div id="loadingStatus" class="status">Analysing your profile. Please wait...</div>
+    <div id="errorStatus" class="status"></div>
+  </div>
 
-        <div class="box">
-            <h2>Tell us about yourself</h2>
-
-            <textarea id="profileText">I am a Computer Science engineering student interested in artificial intelligence and machine learning. I know Python, Java, SQL, HTML, CSS, and basic machine learning. I want to become an AI engineer.</textarea>
-
-            <button id="analyzeButton" onclick="analyzeProfile()">
-                Analyze My Profile
-            </button>
-
-            <div id="message"></div>
-        </div>
-
-        <div id="results">
-            <div class="grid">
-
-                <div class="card full">
-                    <h2>👤 Your Profile</h2>
-                    <div id="profileResults"></div>
-                </div>
-
-                <div class="card">
-                    <h2>💼 Recommended Jobs</h2>
-                    <div id="jobResults"></div>
-                </div>
-
-                <div class="card">
-                    <h2>🧩 Skill Gaps</h2>
-                    <div id="gapResults"></div>
-                </div>
-
-                <div class="card full">
-                    <h2>📚 Recommended Courses</h2>
-                    <div id="courseResults"></div>
-                </div>
-
-            </div>
-        </div>
+  <div id="results">
+    <div class="section">
+      <div class="section-heading"><h2>Your Profile</h2><span>AI-extracted summary</span></div>
+      <div id="profileResults"></div>
     </div>
 
-    <script>
-        async function analyzeProfile() {
-            const text = document.getElementById("profileText").value.trim();
-            const button = document.getElementById("analyzeButton");
-            const message = document.getElementById("message");
-            const results = document.getElementById("results");
+    <div class="section">
+      <div class="section-heading"><h2>Matched Jobs</h2><span>Ranked by skill similarity</span></div>
+      <div id="jobsResults"></div>
+    </div>
 
-            if (text.length < 10) {
-                message.className = "error";
-                message.textContent = "Please enter more profile details.";
-                return;
-            }
+    <div class="section">
+      <div class="section-heading"><h2>Skill Gaps</h2><span>Skills to close before you apply</span></div>
+      <div id="gapsResults"></div>
+    </div>
 
-            button.disabled = true;
-            button.textContent = "Analyzing...";
-            message.className = "";
-            message.textContent = "Please wait. Analyzing your profile...";
-            results.style.display = "none";
+    <div class="section">
+      <div class="section-heading"><h2>Recommended Courses</h2><span>Mapped to your gaps</span></div>
+      <div id="coursesResults"></div>
+    </div>
+  </div>
+</div>
 
-            try {
-                const response = await fetch("http://127.0.0.1:8000/analyze", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        raw_text: text
-                    })
-                });
+<script>
+"use strict";
 
-                const responseText = await response.text();
-                const data = JSON.parse(responseText);
+document.addEventListener("DOMContentLoaded", function () {
+  const API_URL = "http://127.0.0.1:8000/analyze";
 
-                if (!response.ok) {
-                    throw new Error(data.detail || "Backend error occurred.");
-                }
+  const profileInput = document.getElementById("profileInput");
+  const analyzeButton = document.getElementById("analyzeButton");
+  const results = document.getElementById("results");
+  const loadingStatus = document.getElementById("loadingStatus");
+  const errorStatus = document.getElementById("errorStatus");
 
-                const result = data.data || data;
+  if (!analyzeButton) {
+    console.error("analyzeButton not found in DOM — check for a duplicate/missing id.");
+    return;
+  }
 
-                showProfile(result.profile || {});
-                showJobs(result.matched_jobs || []);
-                showGaps(result.skill_gaps || []);
-                showCourses(result.recommendations || []);
+  function escapeHTML(value) {
+    if (value === null || value === undefined) return "";
+    return String(value)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
 
-                results.style.display = "block";
-                message.className = "success";
-                message.textContent = "Analysis completed successfully.";
+  // Single source of truth for pulling a value out of an object by trying
+  // several possible key names. Never call this "valueOf" — that collides
+  // with the built-in Object.prototype.valueOf.
+  function getValue(obj, keys, fallback) {
+    if (obj === null || obj === undefined || typeof obj !== "object") {
+      return fallback;
+    }
+    for (const key of keys) {
+      const v = obj[key];
+      if (v !== undefined && v !== null && v !== "") return v;
+    }
+    return fallback;
+  }
 
-            } catch (error) {
-                console.error(error);
-                message.className = "error";
-                message.textContent = "Error: " + error.message;
-            }
+  function renderListOrText(value, fallbackText) {
+    if (Array.isArray(value)) {
+      if (value.length === 0) return escapeHTML(fallbackText);
+      return value.map(item => `<span class="tag">${escapeHTML(item)}</span>`).join("");
+    }
+    return escapeHTML(value || fallbackText);
+  }
 
-            button.disabled = false;
-            button.textContent = "Analyze My Profile";
-        }
+  function showStatus(type, message) {
+    loadingStatus.style.display = "none";
+    errorStatus.style.display = "none";
+    if (type === "loading") loadingStatus.style.display = "block";
+    if (type === "error") {
+      errorStatus.textContent = message || "Something went wrong.";
+      errorStatus.style.display = "block";
+    }
+  }
 
-        function showProfile(profile) {
-            const skills = profile.skills || [];
-            const interests = profile.interests || [];
+  function renderProfile(profile) {
+    const container = document.getElementById("profileResults");
+    if (!profile || Object.keys(profile).length === 0) {
+      container.innerHTML = `<div class="empty">No profile information was returned.</div>`;
+      return;
+    }
 
-            document.getElementById("profileResults").innerHTML =
-                "<p><b>Education:</b> " + (profile.education || "Not specified") + "</p>" +
-                "<p><b>Experience:</b> " + (profile.experience || "Not specified") + "</p>" +
-                "<p><b>Location:</b> " + (profile.location || "Not specified") + "</p>" +
-                "<p><b>Skills:</b><br>" +
-                skills.map(function(skill) {
-                    return '<span class="tag">' + skill + '</span>';
-                }).join("") +
-                "</p><p><b>Interests:</b><br>" +
-                interests.map(function(interest) {
-                    return '<span class="tag">' + interest + '</span>';
-                }).join("") +
-                "</p>";
-        }
+    const education = getValue(profile, ["education", "educational_background", "degree"], "Not provided");
+    const experience = renderListOrText(getValue(profile, ["experience", "work_experience"], []), "None mentioned");
+    const interests = renderListOrText(getValue(profile, ["interests", "career_interests"], []), "None mentioned");
+    const skills = renderListOrText(getValue(profile, ["skills", "technical_skills"], []), "None listed");
 
-        function showJobs(jobs) {
-            const box = document.getElementById("jobResults");
+    container.innerHTML = `
+      <div class="profile-grid">
+        <div class="profile-item"><strong>Education</strong><span>${escapeHTML(education)}</span></div>
+        <div class="profile-item"><strong>Experience</strong><span>${experience}</span></div>
+        <div class="profile-item"><strong>Interests</strong><span>${interests}</span></div>
+      </div>
+      <div class="card">
+        <h3>Skills</h3>
+        <div>${skills}</div>
+      </div>
+    `;
+  }
 
-            if (!jobs.length) {
-                box.innerHTML = '<p class="empty">No suitable jobs found.</p>';
-                return;
-            }
+  function renderJobs(jobs) {
+    const container = document.getElementById("jobsResults");
+    if (!Array.isArray(jobs) || jobs.length === 0) {
+      container.innerHTML = `<div class="empty">No matching jobs found.</div>`;
+      return;
+    }
 
-            box.innerHTML = jobs.map(function(item) {
-                const job = item.job || item;
-                const score = Math.max(
-                    0,
-                    Math.min(100, Math.round((item.match_score || 0) * 100))
-                );
+    container.innerHTML = jobs.map((match) => {
+      const job = (match && typeof match.job === "object" && match.job !== null) ? match.job : (match || {});
+      const title = getValue(job, ["title", "job_title", "role", "position", "name"], "Untitled Role");
+      const company = getValue(job, ["company", "organization", "company_name"], "");
+      const location = getValue(job, ["location"], "");
+      const description = getValue(job, ["description", "details", "summary"], "");
+      const score = Number(getValue(match, ["match_score", "score", "similarity"], 0));
+      const scoreLabel = Number.isFinite(score) ? Math.round(score * 100) + "%" : "N/A";
+      const meta = [company, location].filter(Boolean).join(" · ");
 
-                return '<div class="item">' +
-                    "<h3>" + (job.title || job.name || "Recommended Job") + "</h3>" +
-                    "<p><b>Company:</b> " + (job.company || "Not specified") + "</p>" +
-                    "<p>" + (job.description || "No description available.") + "</p>" +
-                    "<p><b>Match:</b> " + score + "%</p>" +
-                    (job.url ? '<a href="' + job.url + '" target="_blank">View Job</a>' : "") +
-                    "</div>";
-            }).join("");
-        }
+      return `
+        <div class="card">
+          <h3>${escapeHTML(title)}</h3>
+          ${meta ? `<h4>${escapeHTML(meta)}</h4>` : ""}
+          ${description ? `<p>${escapeHTML(description)}</p>` : ""}
+          <span class="match-pill">${scoreLabel} match</span>
+        </div>
+      `;
+    }).join("");
+  }
 
-        function showGaps(gaps) {
-            const box = document.getElementById("gapResults");
+  function renderGaps(gaps) {
+    const container = document.getElementById("gapsResults");
+    if (!Array.isArray(gaps) || gaps.length === 0) {
+      container.innerHTML = `<div class="empty">No significant skill gaps found — strong fit already.</div>`;
+      return;
+    }
 
-            if (!gaps.length) {
-                box.innerHTML = '<p class="empty">No skill gaps found.</p>';
-                return;
-            }
+    container.innerHTML = gaps.map(gap => {
+      const skill = getValue(gap, ["skill", "skill_name", "missing_skill"], "Skill not specified");
+      const reason = getValue(gap, ["explanation", "reason", "description"], "");
+      const importance = String(getValue(gap, ["importance", "priority", "level"], "medium")).toLowerCase();
 
-            box.innerHTML = gaps.map(function(gap) {
-                return '<div class="item">' +
-                    "<h3>" + (gap.skill || gap.name || "Skill Gap") + "</h3>" +
-                    "<p>" + (gap.reason || gap.description || "Skill improvement recommended.") + "</p>" +
-                    "</div>";
-            }).join("");
-        }
+      return `
+        <div class="card">
+          <span class="badge ${importance}">${escapeHTML(importance)}</span>
+          <h3 style="display:inline">${escapeHTML(skill)}</h3>
+          ${reason ? `<p style="margin-top:8px;">${escapeHTML(reason)}</p>` : ""}
+        </div>
+      `;
+    }).join("");
+  }
 
-        function showCourses(courses) {
-            const box = document.getElementById("courseResults");
+  function renderCourses(courses) {
+    const container = document.getElementById("coursesResults");
+    if (!Array.isArray(courses) || courses.length === 0) {
+      container.innerHTML = `<div class="empty">No matching courses in the catalog for the current gaps.</div>`;
+      return;
+    }
 
-            if (!courses.length) {
-                box.innerHTML = '<p class="empty">No course recommendations found.</p>';
-                return;
-            }
+    container.innerHTML = courses.map(course => {
+      const title = getValue(course, ["title", "course_title", "name"], "Untitled Course");
+      const provider = getValue(course, ["provider", "platform"], "");
+      const level = getValue(course, ["level"], "");
+      const link = getValue(course, ["url", "link", "course_url"], "");
+      const skills = getValue(course, ["covered_skills", "skills"], []);
+      const meta = [provider, level].filter(Boolean).join(" · ");
 
-            box.innerHTML = courses.map(function(item) {
-                const course = item.course || item;
+      return `
+        <div class="card">
+          <h3>${escapeHTML(title)}</h3>
+          ${meta ? `<h4>${escapeHTML(meta)}</h4>` : ""}
+          ${Array.isArray(skills) && skills.length ? renderListOrText(skills) : ""}
+          ${link ? `<div style="margin-top:10px;"><a class="course-link" href="${escapeHTML(link)}" target="_blank" rel="noopener noreferrer">View course →</a></div>` : ""}
+        </div>
+      `;
+    }).join("");
+  }
 
-                return '<div class="item">' +
-                    "<h3>" + (course.title || course.name || "Recommended Course") + "</h3>" +
-                    "<p><b>Platform:</b> " + (course.platform || course.provider || "Not specified") + "</p>" +
-                    "<p>" + (course.description || "No description available.") + "</p>" +
-                    (course.url ? '<a href="' + course.url + '" target="_blank">Open Course</a>' : "") +
-                    "</div>";
-            }).join("");
-        }
-    </script>
+  async function analyzeProfile() {
+    const input = profileInput.value.trim();
+
+    if (input.length < 10) {
+      showStatus("error", "Please enter at least 10 characters about your background.");
+      return;
+    }
+
+    analyzeButton.disabled = true;
+    analyzeButton.textContent = "Analysing...";
+    results.style.display = "none";
+    showStatus("loading");
+
+    try {
+      const response = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ raw_text: input }),
+      });
+
+      const payload = await response.json();
+
+      if (!response.ok) {
+        const detail = payload && payload.detail;
+        const message = Array.isArray(detail) ? JSON.stringify(detail) : (detail || "The backend returned an error.");
+        throw new Error(message);
+      }
+
+      const data = payload.data || payload;
+
+      renderProfile(data.profile || {});
+      renderJobs(data.matched_jobs || []);
+      renderGaps(data.skill_gaps || []);
+      renderCourses(data.recommendations || data.recommended_courses ||data.data?.recommendations|| []);
+
+      showStatus("none");
+      results.style.display = "block";
+    } catch (err) {
+      console.error("Analysis error:", err);
+      showStatus("error", err.message || "Unable to analyse your profile. Make sure the backend is running.");
+    } finally {
+      analyzeButton.disabled = false;
+      analyzeButton.textContent = "Analyse My Profile";
+    }
+  }
+
+  analyzeButton.addEventListener("click", analyzeProfile);
+});
+</script>
 </body>
 </html>

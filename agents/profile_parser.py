@@ -42,13 +42,20 @@ def parse_profile(raw_text: str) -> dict:
     prompt = f"""
 You are a professional resume information extraction assistant.
 
-Extract information from the following profile text.
+Extract structured profile information from the following profile text.
 
 Rules:
-- Extract only information supported by the provided text.
+- Extract only information explicitly supported by the provided text.
 - Do not invent skills, education, experience, interests, or location.
-- Return an empty list when information is unavailable.
-- Keep skills and interests as simple, clear strings.
+- The "skills" field must always be a list of strings.
+- The "interests" field must always be a list of strings.
+- The "experience" field must always be a list of strings.
+- Include projects, internships, jobs, or roles in "experience" only
+  when they are explicitly mentioned.
+- Return an empty list when skills, interests, or experience are unavailable.
+- Use null only for unavailable optional text fields such as name,
+  education, or location.
+- Keep skills, interests, and experience as simple, clear strings.
 - Follow the Profile schema exactly.
 
 Profile text:

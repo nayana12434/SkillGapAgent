@@ -20,7 +20,7 @@ from langgraph.graph import StateGraph, START, END
 from agents.profile_parser import parse_profile
 from agents.job_matcher import match_jobs
 from agents.gap_analyzer import analyze_gaps
-from agents.recommender import recommend_courses
+from agents.recommender import recommend_courses 
 
 
 # Project root directory
@@ -120,12 +120,14 @@ def recommender_node(state: PipelineState) -> dict:
 
         elif isinstance(gap, str):
             gap_skills.append(gap)
+    print("ABOUT TO CALL RECOMMENDER")
+    print("recommender function:",recommend_courses)
 
     recommendations = recommend_courses(
         gaps=gap_skills,
         courses=courses,
     )
-
+    print("FInished")
     return {
         "recommendations": recommendations
     }

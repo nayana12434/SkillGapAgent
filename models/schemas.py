@@ -4,16 +4,12 @@ from pydantic import BaseModel, Field
 
 
 class Profile(BaseModel):
-    """
-    Structured information extracted from a user's resume or profile.
-    """
-
     name: Optional[str] = None
     skills: List[str] = Field(default_factory=list)
     education: Optional[str] = None
     location: Optional[str] = None
     interests: List[str] = Field(default_factory=list)
-    experience: Optional[str] = None
+    experience: List[str] = Field(default_factory=list)
 
 
 class ProfileInput(BaseModel):
