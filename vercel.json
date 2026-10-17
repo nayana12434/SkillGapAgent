@@ -1,13 +1,7 @@
 {
   "functions": {
-    "api/main.py": {
+    "index.py": {
       "includeFiles": "data/**"
     }
-  },
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/api/main"
-    }
-  ]
+  }
 }
