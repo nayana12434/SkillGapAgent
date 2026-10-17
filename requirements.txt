@@ -4,5 +4,4 @@ pydantic
 python-dotenv
 langchain-groq
 langgraph
-sentence-transformers
-torch
+
