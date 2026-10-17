@@ -22,7 +22,7 @@ from agents.graph import run_pipeline
 # SkillGapAgent/
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
-FRONTEND_DIR = PROJECT_ROOT / "frontend"
+FRONTEND_DIR = PROJECT_ROOT / "public"
 FRONTEND_FILE = FRONTEND_DIR / "index.html"
 
 
