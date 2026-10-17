@@ -1,30 +1,12 @@
 """
-Matches a user's profile with suitable jobs using sentence embeddings.
+Matches a user's profile with suitable jobs using lightweight
+skill and keyword matching.
 """
 
 import json
+import re
 from pathlib import Path
 from typing import Any, Dict, List
-
-from sentence_transformers import SentenceTransformer, util
-
-
-# Lazy-loaded model.
-# The model loads only when the first matching request is made.
-_model = None
-
-
-def get_model() -> SentenceTransformer:
-    """
-    Load the embedding model only once.
-    """
-
-    global _model
-
-    if _model is None:
-        _model = SentenceTransformer("all-MiniLM-L6-v2")
-
-    return _model
 
 
 def load_jobs(
@@ -57,7 +39,41 @@ def normalize_skill(skill: str) -> str:
     Normalize a skill for comparison.
     """
 
-    return " ".join(skill.lower().strip().split())
+    return " ".join(
+        str(skill).lower().strip().split()
+    )
+
+
+def skill_matches(user_skill: str, required_skill: str) -> bool:
+    """
+    Check whether two skills are similar using
+    lightweight substring matching.
+    """
+
+    user_skill = normalize_skill(user_skill)
+    required_skill = normalize_skill(required_skill)
+
+    if not user_skill or not required_skill:
+        return False
+
+    # Exact match
+    if user_skill == required_skill:
+        return True
+
+    # Substring match
+    if user_skill in required_skill:
+        return True
+
+    if required_skill in user_skill:
+        return True
+
+    # Handle common separators
+    user_words = set(re.findall(r"[a-z0-9+#.]+", user_skill))
+    required_words = set(
+        re.findall(r"[a-z0-9+#.]+", required_skill)
+    )
+
+    return bool(user_words & required_words)
 
 
 def missing_skills_for(
@@ -66,21 +82,79 @@ def missing_skills_for(
 ) -> List[str]:
     """
     Find required skills that the user does not have.
-
-    This exact-match comparison is retained for transparency
-    and for use by the skill-gap analyzer.
     """
 
-    normalized_user = {
-        normalize_skill(skill)
-        for skill in user_skills
-    }
+    missing = []
 
-    return [
-        skill
-        for skill in required_skills
-        if normalize_skill(skill) not in normalized_user
-    ]
+    for required_skill in required_skills:
+
+        found = any(
+            skill_matches(user_skill, required_skill)
+            for user_skill in user_skills
+        )
+
+        if not found:
+            missing.append(required_skill)
+
+    return missing
+
+
+def calculate_match_score(
+    user_skills: List[str],
+    user_interests: List[str],
+    required_skills: List[str],
+    description: str,
+) -> float:
+    """
+    Calculate a lightweight job match score.
+
+    The score considers:
+    - Matching required skills
+    - User interests
+    - Relevant keywords in the job description
+    """
+
+    if not required_skills:
+        return 0.0
+
+    matched_count = 0
+
+    for required_skill in required_skills:
+        if any(
+            skill_matches(user_skill, required_skill)
+            for user_skill in user_skills
+        ):
+            matched_count += 1
+
+    skill_score = matched_count / len(required_skills)
+
+    # Check whether interests appear in the job information.
+    job_text = normalize_skill(
+        " ".join(required_skills) + " " + description
+    )
+
+    interest_matches = 0
+
+    for interest in user_interests:
+        interest = normalize_skill(interest)
+
+        if interest and interest in job_text:
+            interest_matches += 1
+
+    if user_interests:
+        interest_score = (
+            interest_matches / len(user_interests)
+        )
+    else:
+        interest_score = 0.0
+
+    # Skills are more important than interests.
+    final_score = (
+        skill_score * 0.8
+        + interest_score * 0.2
+    )
+
+    return round(final_score, 3)
 
 
 def match_jobs(
@@ -89,10 +163,8 @@ def match_jobs(
     top_k: int = 5,
 ) -> List[Dict[str, Any]]:
     """
-    Match the user's profile against jobs using embedding similarity.
-
-    The user's skills and interests are compared with each job's
-    required skills and description.
+    Match the user's profile against jobs using
+    lightweight skill matching.
     """
 
     if not isinstance(profile, dict):
@@ -103,62 +175,34 @@ def match_jobs(
     user_skills = profile.get("skills", []) or []
     user_interests = profile.get("interests", []) or []
 
-    profile_text = ", ".join(
-        user_skills + user_interests
-    ) or "general"
-
     jobs = load_jobs(jobs_path)
 
     if not jobs:
         return []
 
-    model = get_model()
-
-    # Convert the user's skills and interests into an embedding.
-    profile_embedding = model.encode(
-        profile_text,
-        convert_to_tensor=True,
-    )
-
-    # Create a text representation for every job.
-    job_texts = []
-
-    for job in jobs:
-        required_skills = job.get("required_skills", []) or []
-        description = job.get("description") or ""
-
-        job_text = (
-            ", ".join(required_skills)
-            + ". "
-            + description
-        )
-
-        job_texts.append(job_text)
-
-    # Convert all jobs into embeddings.
-    job_embeddings = model.encode(
-        job_texts,
-        convert_to_tensor=True,
-    )
-
-    # Calculate semantic similarity scores.
-    similarities = util.cos_sim(
-        profile_embedding,
-        job_embeddings,
-    )[0]
-
     matched_jobs = []
 
-    for job, similarity in zip(jobs, similarities):
-        required_skills = job.get("required_skills", []) or []
+    for job in jobs:
+
+        required_skills = (
+            job.get("required_skills", []) or []
+        )
+
+        description = (
+            job.get("description") or ""
+        )
+
+        score = calculate_match_score(
+            user_skills,
+            user_interests,
+            required_skills,
+            description,
+        )
 
         matched_jobs.append(
             {
                 "job": job,
-                "match_score": round(
-                    float(similarity),
-                    3,
-                ),
+                "match_score": score,
                 "missing_skills": missing_skills_for(
                     user_skills,
                     required_skills,
@@ -166,7 +210,7 @@ def match_jobs(
             }
         )
 
-    # Highest similarity scores appear first.
+    # Highest scores first.
     matched_jobs.sort(
         key=lambda item: item["match_score"],
         reverse=True,
